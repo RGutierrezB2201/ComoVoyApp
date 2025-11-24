@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>COMOVOY: Ficha de Estudiante {{ student.id }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 40px;
+            background-color: #f0f2f5;
+            color: #1c1e21;
+        }
+        h1 {
+            color: #3b5998;
+            border-bottom: 4px solid #3b5998;
+            padding-bottom: 15px;
+            margin-bottom: 10px;
+            font-size: 2.2em;
+        }
+        h2 {
+            color: #1c1e21;
+            border-left: 5px solid #3b5998;
+            padding-left: 10px;
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+
+        .student-career-header {
+            font-size: 1.3em;
+            color: #555;
+            margin-bottom: 30px;
+            font-weight: 500;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .data-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            transition: transform 0.2s;
+        }
+        .data-card h3 {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 0;
+            color: #3b5998;
+        }
+        .data-item {
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+        .data-item strong {
+            display: inline-block;
+            width: 150px;
+            color: #555;
+        }
+
+        .risk-tag {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 1em;
+            display: inline-block;
+        }
+        .ALTO { background-color: #ffcccc; color: #cc0000; border: 1px solid #cc0000; }
+        .MEDIO { background-color: #ffe0b3; color: #e68a00; border: 1px solid #e68a00; }
+        .BAJO { background-color: #d4edda; color: #155724; border: 1px solid #155724; }
+
+        .score-visualizer {
+            background-color: #e9ecef;
+            border-radius: 5px;
+            height: 20px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        .score-bar {
+            height: 100%;
+            background-color: #3b5998;
+            text-align: right;
+            line-height: 20px;
+            color: white;
+            font-size: 0.8em;
+            padding-right: 5px;
+            transition: width 0.5s ease;
+        }
+
+        .back-to-dashboard {
+            display: inline-block;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background-color: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+
+        .back-to-dashboard:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+<body>
+
+    {% set nivel_alerta = student.Nivel_Alerta.upper() %}
+    {% set riesgo_class = nivel_alerta %}
+    {% set probabilidad_riesgo = (student.Riesgo_Probabilidad * 100) | round(2) %}
+
+    <a href="/" class="back-to-dashboard">← Volver al Dashboard Principal</a>
+
+    <h1>Ficha Detallada: Estudiante ID {{ student.id }}</h1>
+
+    <h3 class="student-career-header">{{ student.Carrera }}</h3>
+
+    ---
+
+    <h2>Resumen y Estado Actual</h2>
+    <div class="card-grid">
+        <div class="data-card" style="grid-column: span 2;">
+            <div class="data-item">
+                <strong>Nivel de Alerta:</strong>
+                <span class="risk-tag {{ riesgo_class }}">{{ nivel_alerta }}</span>
+            </div>
+            <div class="data-item">
+                <strong>Probabilidad de Riesgo:</strong>
+                {{ probabilidad_riesgo }}%
+            </div>
+            <div class="data-item">
+                <strong>Índice de Riesgo (0-100):</strong>
+                {{ student.Indice_Riesgo }}
+            </div>
+            </div>
+    </div>
+
+    ---
+
+    <h2>Métricas de Desempeño Clave</h2>
+    <div class="data-card">
+        <h3>Nota Final Promedio (0-100)</h3>
+        {% set nota_final_norm = student.Nota_final %}
+        <div class="data-item">
+            <strong>Nota Final:</strong> {{ nota_final_norm }}
+            <div class="score-visualizer">
+                <div class="score-bar" style="width: {{ nota_final_norm }}%;">
+                    {{ nota_final_norm }}
+                </div>
+            </div>
+        </div>
+
+        <h3>Promedio Certámenes (0-100)</h3>
+        {% set prom_cert_norm = student.Prom_certamenes %}
+        <div class="data-item">
+            <strong>Promedio:</strong> {{ prom_cert_norm }}
+            <div class="score-visualizer">
+                <div class="score-bar" style="width: {{ prom_cert_norm }}%; background-color: #f0ad4e;">
+                    {{ prom_cert_norm }}
+                </div>
+            </div>
+        </div>
+
+        <h3>Promedio Controles (0-100)</h3>
+        {% set prom_cont_norm = student.Prom_controles %}
+        <div class="data-item">
+            <strong>Promedio:</strong> {{ prom_cont_norm }}
+            <div class="score-visualizer">
+                <div class="score-bar" style="width: {{ prom_cont_norm }}%; background-color: #5cb85c;">
+                    {{ prom_cont_norm }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    ---
+
+    <h2>Datos Personales y Admisión</h2>
+    <div class="card-grid">
+        <div class="data-card">
+            <h3>Datos Demográficos</h3>
+            <div class="data-item"><strong>Género:</strong> {{ student.Genero }}</div>
+            <div class="data-item"><strong>Región:</strong> {{ student.Region }}</div>
+            <div class="data-item"><strong>Jornada:</strong> {{ student.Jornada }}</div>
+            <div class="data-item"><strong>Dependencia:</strong> {{ student.Dependencia }}</div>
+            <div class="data-item"><strong>Vía Ingreso:</strong> {{ student.Via_Ingreso }}</div>
+            <div class="data-item"><strong>NEM:</strong> {{ student.NEM }}</div>
+            <div class="data-item"><strong>Año Egreso:</strong> {{ student.Ano_Egreso | default('N/A') }}</div>
+        </div>
+
+        <div class="data-card">
+            <h3>Puntajes de Admisión (PAES/PSU)</h3>
+            <div class="data-item"><strong>Puntaje Ponderado:</strong> {{ student.Puntaje_Ponderado | round(2) }}</div>
+            <div class="data-item"><strong>Puntaje Ranking:</strong> {{ student.Puntaje_Ranking | round(2) }}</div>
+            <div class="data-item"><strong>Matemática M1:</strong> {{ student.Puntaje_Mat_M1 | round(2) }}</div>
+            <div class="data-item"><strong>Lenguaje:</strong> {{ student.Puntaje_Lenguaje | round(2) }}</div>
+            <div class="data-item"><strong>Ciencias:</strong> {{ student.Puntaje_Ciencias | round(2) }}</div>
+            <div class="data-item"><strong>Historia:</strong> {{ student.Puntaje_Historia | round(2) }}</div>
+        </div>
+    </div>
+
+    ---
+
+    <h2>Todas las Métricas Detalladas</h2>
+    <div class="data-card">
+        {% for key, value in student.items() %}
+            {% if key not in ['id', 'Carrera', 'Nivel_Alerta', 'Riesgo_Probabilidad', 'Indice_Riesgo', 'Aprobado', 'Genero', 'Region', 'Jornada', 'Dependencia', 'Via_Ingreso', 'NEM', 'Ano_Egreso', 'Puntaje_Ponderado', 'Puntaje_Ranking', 'Puntaje_Mat_M1', 'Puntaje_Lenguaje', 'Puntaje_Ciencias', 'Puntaje_Historia', 'Nota_final', 'Prom_certamenes', 'Prom_controles'] %}
+                <div class="data-item" style="grid-column: span 1;">
+                    <strong>{{ key.replace('_', ' ') }}:</strong> {{ value }}
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    <p style="margin-top: 30px;">
+        <a href="/" class="back-to-dashboard">← Volver al Dashboard Principal</a>
+    </p>
+
+</body>
+</html>

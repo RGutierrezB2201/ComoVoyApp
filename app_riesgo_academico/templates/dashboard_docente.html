@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>COMOVOY, Monitor de Riesgo Académico</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 40px;
+            background-color: #f0f2f5;
+            color: #1c1e21;
+        }
+        h1 {
+            color: #3b5998;
+            border-bottom: 4px solid #3b5998;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+        }
+        p {
+            color: #555;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .career-section-header {
+            color: #1a4d7c;
+            border-bottom: 2px solid #a6c0e8;
+            padding-bottom: 8px;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            font-weight: 600;
+        }
+
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .student-card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .student-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-header-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            padding-bottom: 0px;
+            border-bottom: none;
+        }
+
+        .student-career {
+            font-size: 0.9em;
+            color: #777;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            line-height: 1.2;
+            font-weight: 600;
+        }
+
+        .risk-tag {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9em;
+            text-align: center;
+        }
+        .risk-tag.ALTO { background-color: #ffcccc; color: #cc0000; border: 1px solid #cc0000; }
+        .risk-tag.MEDIO { background-color: #ffe0b3; color: #e68a00; border: 1px solid #e68a00; }
+        .risk-tag.BAJO { background-color: #d4edda; color: #155724; border: 1px solid #155724; }
+
+        .progress-bar-container {
+            width: 100%;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            margin: 15px 0;
+            overflow: hidden;
+            height: 15px;
+        }
+        .progress-bar {
+            height: 100%;
+            transition: width 0.5s ease;
+            text-align: right;
+            line-height: 15px;
+            color: white;
+            font-size: 0.7em;
+            padding-right: 5px;
+        }
+        .progress-bar.ALTO { background-color: #cc0000; }
+        .progress-bar.MEDIO { background-color: #e68a00; }
+        .progress-bar.BAJO { background-color: #155724; }
+
+        .card-footer {
+            margin-top: 15px;
+            text-align: right;
+        }
+        .card-footer a {
+            color: #3b5998;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 8px 15px;
+            border: 1px solid #3b5998;
+            border-radius: 5px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .card-footer a:hover {
+            background-color: #3b5998;
+            color: white;
+        }
+
+        #loading-message {
+            text-align: center;
+            padding: 50px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+
+<h1>COMOVOY: Dashboard del Docente</h1>
+
+<p>Lista interactiva de estudiantes evaluados, agrupados por su programa de estudios.</p>
+
+<div id="loading-message">Cargando datos del agente de predicción...</div>
+<div id="dashboard-content">
+    </div>
+
+<script>
+    async function cargarDashboard() {
+        const loadingMessage = document.getElementById("loading-message");
+        const dashboardContent = document.getElementById("dashboard-content");
+
+        try {
+            const response = await fetch('/dashboard_data');
+
+            if (!response.ok) {
+                throw new Error(`Error al cargar datos. Código de estado: ${response.status}`);
+            }
+
+            const rawData = await response.json();
+            const estudiantes = rawData.estudiantes;
+
+            if (!Array.isArray(estudiantes)) {
+                throw new Error("La estructura de datos JSON es incorrecta (se esperaba el array 'estudiantes').");
+            }
+
+            const groupedStudents = estudiantes.reduce((acc, student) => {
+                const career = student.Carrera || 'Sin Carrera Especificada';
+                if (!acc[career]) {
+                    acc[career] = [];
+                }
+                acc[career].push(student);
+                return acc;
+            }, {});
+
+            dashboardContent.innerHTML = '';
+            loadingMessage.style.display = 'none';
+
+            for (const career in groupedStudents) {
+                if (groupedStudents.hasOwnProperty(career)) {
+
+                    const studentsInCareer = groupedStudents[career];
+
+                    const careerHeader = document.createElement("h2");
+                    careerHeader.innerHTML = `📚 ${career} (${studentsInCareer.length} Estudiantes)`;
+                    careerHeader.classList.add('career-section-header');
+                    dashboardContent.appendChild(careerHeader);
+
+                    const careerCardsContainer = document.createElement("div");
+                    careerCardsContainer.classList.add("dashboard-container");
+
+                    studentsInCareer.forEach(item => {
+                        const nivelRiesgo = item.Nivel_Alerta.toUpperCase();
+                        const riesgoProbabilidad = item.Indice_Riesgo;
+
+                        const card = document.createElement("div");
+                        card.classList.add("student-card");
+                        const riesgoClass = nivelRiesgo;
+
+                        card.innerHTML = `
+                            <div class="card-header-status">
+                                <span class="student-id">ID: ${item.id}</span>
+                                <span class="risk-tag ${riesgoClass}">${nivelRiesgo}</span>
+                            </div>
+
+                            <div class="student-career">
+                                ${item.Carrera}
+                            </div>
+
+                            <div class="progress-bar-container">
+                                <div class="progress-bar ${riesgoClass}" style="width: ${riesgoProbabilidad}%;">
+                                    ${riesgoProbabilidad}%
+                                </div>
+                            </div>
+
+                            <div class="card-footer">
+                                <a href="/detalle/${item.id}">Ver Ficha Completa</a>
+                            </div>
+                        `;
+
+                        careerCardsContainer.appendChild(card);
+                    });
+
+                    dashboardContent.appendChild(careerCardsContainer);
+                }
+            }
+
+        } catch (error) {
+            console.error("Error al cargar el dashboard:", error);
+            loadingMessage.innerHTML = `
+                <h2>❌ Error de Carga</h2>
+                <p style="color: red;">No se pudo cargar el dashboard. Mensaje: ${error.message}</p>
+            `;
+            loadingMessage.style.display = 'block';
+        }
+    }
+
+    cargarDashboard();
+</script>
+
+</body>
+</html>
