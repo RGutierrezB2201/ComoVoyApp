@@ -1,0 +1,17 @@
+==================================================
+FECHA/HORA: 24/11/2025 10:43:31
+DESTINATARIO: docente@comovoy.cl
+ASUNTO: ALERTA SIMULADA: Estudiantes en Riesgo Académico, 11: 24/11/2025 10:43:31
+ESTUDIANTES EN ALERTA (11):
+  - ID: 55, Carrera: Ingeniería Civil Informática, Nivel: ALTO, IR: 99%
+  - ID: 60, Carrera: Ingeniería Civil Industrial, Nivel: ALTO, IR: 96%
+  - ID: 82, Carrera: Ingeniería Civil Industrial, Nivel: ALTO, IR: 96%
+  - ID: 13, Carrera: Ingeniería Civil Informática, Nivel: ALTO, IR: 95%
+  - ID: 5, Carrera: Ingeniería Civil Informática, Nivel: ALTO, IR: 94%
+  - ID: 92, Carrera: Ingeniería Civil Industrial, Nivel: ALTO, IR: 94%
+  - ID: 88, Carrera: Ingeniería Ejecución en Computación e Informática, Nivel: ALTO, IR: 93%
+  - ID: 56, Carrera: Ingeniería Civil Informática, Nivel: ALTO, IR: 89%
+  - ID: 19, Carrera: Ingeniería Civil Informática, Nivel: ALTO, IR: 87%
+  - ID: 100, Carrera: Ingeniería Civil Industrial, Nivel: ALTO, IR: 83%
+  - ID: 57, Carrera: Ingeniería Civil Industrial, Nivel: ALTO, IR: 80%
+==================================================

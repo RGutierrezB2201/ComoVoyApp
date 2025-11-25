@@ -134,12 +134,12 @@ def entrenar_modelo(X_train: pd.DataFrame, y_train: pd.Series):
     return random_search.best_estimator_
 
 def evaluar_modelo(model: Pipeline, X_data: pd.DataFrame, y_true: pd.Series, subset_name: str, umbral: float = 0.5):
-    print(f"\n--- Evaluación: {subset_name} (Umbral: {umbral:.2f}---")
+    print(f"\n--- Evaluación: {subset_name}") #(Umbral: {umbral:.2f}---
 
-    #y_pred = model.predict(X_data)
+    y_pred = model.predict(X_data)
     y_proba = model.predict_proba(X_data)
     y_proba_riesgo = y_proba[:, 0]
-    y_pred = (y_proba_riesgo >= umbral).astype(int)
+    #y_pred = (y_proba_riesgo >= umbral).astype(int)
 
     target_names = ["Riesgo Alto (0)", "Riesgo Bajo (1)"]
     print(classification_report(y_true, y_pred, target_names=target_names))
@@ -197,11 +197,77 @@ def main():
     )
 
     plot_metricas(cm_test, y_test, y_proba_riesgo_test, roc_auc_test)
+    importance_df = get_feature_importances(
+        best_pipeline,
+        NUMERIC_FEATURES,
+        CATEGORICAL_FEATURES
+    )
 
+    print(importance_df.head(10))
+    plot_feature_importances(importance_df, top_n=15)
     os.makedirs(MODEL_DIR, exist_ok=True)
     dump(best_pipeline, os.path.join(MODEL_DIR, MODEL_FILE))
     print(f"Pipeline guardado en: {os.path.join(MODEL_DIR, MODEL_FILE)}")
 
 
+def get_feature_importances(pipeline, num_features: list, cat_features: list):
+    """
+    Extrae las importancias de las características de un Pipeline que usa
+    GradientBoostingClassifier después de un ColumnTransformer con OneHotEncoder.
+    """
+
+    clasificador = pipeline.named_steps['clasificador']
+    importances = clasificador.feature_importances_
+
+
+    preprocesador = pipeline.named_steps['preprocesador']
+
+
+    try:
+        feature_names = preprocesador.get_feature_names_out()
+    except:
+        feature_names = num_features.copy()
+
+        ohe_transformer = preprocesador.named_transformers_['cat']
+        if ohe_transformer is not None:
+            cat_original_names = cat_features
+            categories = ohe_transformer.categories_
+
+            for col_name, cats in zip(cat_original_names, categories):
+                for cat in cats:
+                    feature_names.append(f"{col_name}_{cat}")
+
+
+    feature_importance_df = pd.DataFrame({
+        'Feature': feature_names,
+        'Importance': importances
+    })
+
+    return feature_importance_df.sort_values(by='Importance', ascending=False)
+
+
+def plot_feature_importances(importance_df, top_n=15):
+    """Grafica la importancia de las Top N características."""
+
+    top_features = importance_df.head(top_n).copy()
+    top_features['Feature_Short'] = top_features['Feature'].str.replace('^num__|^cat__', '', regex=True)
+
+    plt.figure(figsize=(10, 8))
+    sns.barplot(
+        x='Importance',
+        y='Feature_Short',
+        data=top_features,
+        palette='viridis'
+    )
+    plt.title(f'Top {top_n} Importancia de Características (Gradient Boosting)')
+    plt.xlabel('Importancia (Gini/Ganancia)')
+    plt.ylabel('Característica')
+    plt.tight_layout()
+
+    plot_path = os.path.join(MODEL_DIR, 'feature_importances.png')
+    plt.savefig(plot_path)
+    plt.show()
+    print(f"Gráfico de importancia de características guardado en: {plot_path}")
 if __name__ == '__main__':
     main()
+
