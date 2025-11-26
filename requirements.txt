@@ -1,6 +1,12 @@
+flask-sqlalchemy
 seaborn
 matplotlib
 scikit-learn
 Flask~=3.1.2
 numpy~=2.3.5
 Faker~=38.2.0
+requests
+pandas
+flask_sqlalchemy
+joblib
+scipy
